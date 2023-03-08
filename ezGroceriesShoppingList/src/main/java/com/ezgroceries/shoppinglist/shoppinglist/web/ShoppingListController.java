@@ -6,6 +6,7 @@ import com.ezgroceries.shoppinglist.shoppinglist.services.ShoppingListService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -38,7 +39,12 @@ public class ShoppingListController {
         ShoppingList shoppingList = shoppingListService.findById(shoppingListID).get();
         shoppingListService.addCocktail(shoppingList,cocktail);
 
-        return entityWithLocation(shoppingList.getId());
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentContextPath()
+                .path("/shopping-lists/{id}")
+                .buildAndExpand(shoppingListID)
+                .toUri();
+        return ResponseEntity.created(location).contentType(MediaType.APPLICATION_JSON).build();
     }
 
 
@@ -70,6 +76,7 @@ public class ShoppingListController {
 
         // Return an HttpEntity object - it will be used to build the
         // HttpServletResponse
-        return ResponseEntity.created(location).build();
+        return ResponseEntity.created(location).contentType(MediaType.APPLICATION_JSON).build();
     }
+
 }

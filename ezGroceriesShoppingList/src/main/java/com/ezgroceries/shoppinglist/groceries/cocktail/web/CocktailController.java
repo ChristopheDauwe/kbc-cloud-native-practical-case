@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collection;
 import java.util.List;
 
 @RestController("CocktailController")
@@ -25,10 +26,10 @@ public class CocktailController {
 
     @GetMapping(value = "/cocktails")
     @ResponseStatus(HttpStatus.OK)
-    public List<Cocktail> allCocktails(@RequestParam("search") String search) {
+    public Collection<Cocktail> allCocktails(@RequestParam("search") String search) {
 
         log.info("search: {}",search);
-        return cocktailService.findAll();
+        return cocktailService.findAll(search);
     }
 
 }
