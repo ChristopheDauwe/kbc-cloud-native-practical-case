@@ -24,27 +24,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
-public class CocktailControllerTests {
+class CocktailControllerTests {
 
     @Autowired
     private MockMvc mockMvc;
-
     private final String STRID = "1102";
     private final UUID ID = UUID.nameUUIDFromBytes(STRID.getBytes());
-
     private final String NAME = "Margerita";
-
     private final String INGREDIENT1 = "Tequila";
     private final String INGREDIENT2 = "Triple sec";
     private final String INGREDIENT3 = "Lime juice";
-
-
     private final Collection INGREDIENTS = List.of(INGREDIENT1,INGREDIENT2,INGREDIENT3);
     private final String GLASS = "Cocktail glass";
-
     private final String INSTRUCTIONS = "Rub the rim of the glass with the lime slice to make the salt stick to it. Take care to moisten..";
     private final String IMAGE = "https://www.thecocktaildb.com/images/media/drink/wpxpvu1439905379.jpg";
-
     private final CocktailDBResponse cocktailDBResponse = new CocktailDBResponse(List.of(new DrinkResource(STRID,NAME,GLASS,INSTRUCTIONS,IMAGE,INGREDIENT1,INGREDIENT2,INGREDIENT3)));
     @MockBean
     private CocktailDBClient cocktailClient;
