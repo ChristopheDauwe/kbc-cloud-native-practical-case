@@ -1,45 +1,76 @@
 package com.ezgroceries.shoppinglist.shoppinglist.services;
 
-import com.ezgroceries.shoppinglist.groceries.cocktail.Cocktail;
-import com.ezgroceries.shoppinglist.shoppinglist.ShoppingList;
+import com.ezgroceries.shoppinglist.groceries.cocktail.CocktailException;
+import com.ezgroceries.shoppinglist.groceries.cocktail.CocktailResource;
+import com.ezgroceries.shoppinglist.groceries.cocktail.domain.Cocktail;
+import com.ezgroceries.shoppinglist.groceries.cocktail.services.CocktailService;
+import com.ezgroceries.shoppinglist.shoppinglist.ShoppingListException;
+import com.ezgroceries.shoppinglist.shoppinglist.ShoppingListMapper;
+import com.ezgroceries.shoppinglist.shoppinglist.ShoppingListResource;
+import com.ezgroceries.shoppinglist.shoppinglist.domain.ShoppingList;
+import com.ezgroceries.shoppinglist.shoppinglist.repo.ShoppingListRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service("ShoppingListService")
 public class ShoppingListService {
 
-    private static final UUID DUMMY_SHOPPINGLIST = UUID.randomUUID();
-    private final ShoppingList STEPHANIE = new ShoppingList("Stephanie's birthday",DUMMY_SHOPPINGLIST,List.of("Tequila",
-            "Triple sec",
-            "Lime juice",
-            "Salt",
-            "Blue Curacao"));
 
-    private final ShoppingList MY_BD = new ShoppingList("My Birthday",DUMMY_SHOPPINGLIST,List.of("Tequila",
-            "Triple sec",
-            "Lime juice",
-            "Salt",
-            "Blue Curacao"));
-    public ShoppingList createShoppingList(ShoppingList shoppingList) {
-        shoppingList.setId(DUMMY_SHOPPINGLIST);
-        return shoppingList;
+    private final ShoppingListRepository shoppingListRepository;
+    private final CocktailService cocktailService;
+
+    private final ShoppingListMapper shoppingListMapper;
+
+    public ShoppingListService(ShoppingListRepository shoppingListRepository, CocktailService cocktailService, ShoppingListMapper shoppingListMapper) {
+        this.shoppingListRepository = shoppingListRepository;
+        this.cocktailService = cocktailService;
+        this.shoppingListMapper = shoppingListMapper;
+    }
+
+    public ShoppingListResource createShoppingList(ShoppingListResource shoppingListResource) {
+
+        ShoppingList shoppingList = shoppingListRepository.save(new ShoppingList(UUID.randomUUID(), shoppingListResource.name(), Set.of()));
+        return new ShoppingListResource(shoppingList.getId(), shoppingList.getName(), List.of());
     }
 
 
-    public ShoppingList addCocktail(ShoppingList shoppingList, Cocktail cocktail) {
-        return STEPHANIE;
+    public ShoppingListResource addCocktail(ShoppingListResource shoppingListResource, CocktailResource cocktailResource) {
+
+        Cocktail cocktail = cocktailService.findCocktailById(cocktailResource.id());
+
+
+        ShoppingList list = findShoppingListById(shoppingListResource.id());
+        list.addCocktail(cocktail);
+        shoppingListRepository.save(list);
+
+        return shoppingListMapper.toShoppingListResource(list,getIngredients(list));
+
+
     }
 
-    public Optional<ShoppingList> findById(UUID id) {
-        return Optional.of(STEPHANIE);
+    private ShoppingList findShoppingListById(UUID uuid) {
+        Optional<ShoppingList> shoppingList = shoppingListRepository.findById(uuid);
+        return shoppingList.orElseThrow(() -> new ShoppingListException(String.format("Shopping list with id %s does not exist", uuid)));
     }
 
-    public Collection<ShoppingList> findAll() {
-        return List.of(STEPHANIE,MY_BD);
+    public ShoppingListResource findById(UUID uuid) {
+        ShoppingList shoppingList = findShoppingListById(uuid);
+        return shoppingListMapper.toShoppingListResource(shoppingList,getIngredients(shoppingList));
     }
+
+    private Collection<String> getIngredients(ShoppingList list){
+        Collection<String> ingredients = new ArrayList<>();
+
+        list.getCocktails().forEach(cocktail -> ingredients.addAll(cocktail.getIngredients()));
+
+        return ingredients;
+    }
+
+
+    public Collection<ShoppingListResource> findAll() {
+        return shoppingListRepository.findAll().stream().map(shoppingList -> shoppingListMapper.toShoppingListResource(shoppingList,getIngredients(shoppingList))).toList();
+    }
+
 
 }

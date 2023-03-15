@@ -1,7 +1,7 @@
 package com.ezgroceries.shoppinglist.shoppinglist.web;
 
-import com.ezgroceries.shoppinglist.groceries.cocktail.Cocktail;
-import com.ezgroceries.shoppinglist.shoppinglist.ShoppingList;
+import com.ezgroceries.shoppinglist.groceries.cocktail.CocktailResource;
+import com.ezgroceries.shoppinglist.shoppinglist.ShoppingListResource;
 import com.ezgroceries.shoppinglist.shoppinglist.services.ShoppingListService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +13,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController("ShoppingListController")
@@ -28,29 +29,33 @@ public class ShoppingListController {
     }
 
     @PostMapping(value = "/shopping-lists")
-    public ResponseEntity<Void> createShoppingList(@RequestBody ShoppingList newShoppingList) {
-        ShoppingList shoppingList = shoppingListService.createShoppingList(newShoppingList);
+    public ResponseEntity<Void> createShoppingList(@RequestBody ShoppingListResource newShoppingListResource) {
+        ShoppingListResource shoppingListResource = shoppingListService.createShoppingList(newShoppingListResource);
 
-        return entityWithLocation(shoppingList.getId());
+        return entityWithLocation(shoppingListResource.id());
     }
 
     @PostMapping(value = "/shopping-lists/{shoppingListId}/cocktails")
-    public ResponseEntity<Void> addCocktailToShoppingList(@PathVariable("shoppingListId") UUID shoppingListID, @RequestBody Cocktail cocktail) {
-        ShoppingList shoppingList = shoppingListService.findById(shoppingListID).get();
-        shoppingListService.addCocktail(shoppingList,cocktail);
+    public ResponseEntity<Void> addCocktailToShoppingList(@PathVariable("shoppingListId") UUID shoppingListID, @RequestBody CocktailResource cocktailResource) {
+        ShoppingListResource shoppingListResource = shoppingListService.findById(shoppingListID);
 
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentContextPath()
-                .path("/shopping-lists/{id}")
-                .buildAndExpand(shoppingListID)
-                .toUri();
-        return ResponseEntity.created(location).contentType(MediaType.APPLICATION_JSON).build();
+
+
+
+            shoppingListService.addCocktail(shoppingListResource, cocktailResource);
+
+            URI location = ServletUriComponentsBuilder
+                    .fromCurrentContextPath()
+                    .path("/shopping-lists/{id}")
+                    .buildAndExpand(shoppingListID)
+                    .toUri();
+            return ResponseEntity.created(location).contentType(MediaType.APPLICATION_JSON).build();
     }
 
 
     @GetMapping(value = "/shopping-lists")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<ShoppingList> getAllShoppingList() {
+    public Collection<ShoppingListResource> getAllShoppingList() {
 
 
         return shoppingListService.findAll();
