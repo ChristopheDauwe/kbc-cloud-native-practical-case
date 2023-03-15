@@ -9,18 +9,24 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@AllArgsConstructor
-@Getter
-@Setter
-public class DrinkResource {
-    private String idDrink;
-    private String strDrink;
-    private String strGlass;
-    private String strInstructions;
-    private String strDrinkThumb;
-    private String strIngredient1;
-    private String strIngredient2;
-    private String strIngredient3;
+
+/**
+ *
+ * @param idDrink
+ * @param strDrink
+ * @param strGlass
+ * @param strInstructions
+ * @param strDrinkThumb
+ * @param strIngredient1
+ * @param strIngredient2
+ * @param strIngredient3
+ */
+public record DrinkResource (String idDrink, String strDrink, String strGlass, String strInstructions, String strDrinkThumb,
+     String strIngredient1,
+     String strIngredient2,
+     String strIngredient3){
+
+
 
     public Collection<String> getIngredients() {
         Collection<String> ingr = new ArrayList<>();

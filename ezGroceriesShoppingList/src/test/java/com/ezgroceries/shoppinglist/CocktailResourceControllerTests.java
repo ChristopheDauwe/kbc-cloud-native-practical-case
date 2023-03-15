@@ -4,6 +4,7 @@ import com.ezgroceries.shoppinglist.groceries.cocktail.client.CocktailDBClient;
 import com.ezgroceries.shoppinglist.groceries.cocktail.client.CocktailDBResponse;
 import com.ezgroceries.shoppinglist.groceries.cocktail.client.DrinkResource;
 import com.ezgroceries.shoppinglist.groceries.cocktail.domain.Cocktail;
+import com.ezgroceries.shoppinglist.groceries.cocktail.services.CocktailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +17,12 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import javax.transaction.Transactional;
 import java.util.*;
-import java.util.regex.Pattern;
 
 import static com.ezgroceries.shoppinglist.TestUtil.UUID_REGEX;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -42,14 +44,17 @@ class CocktailResourceControllerTests {
     private static final Collection<String> INGREDIENTS = List.of(INGREDIENT1,INGREDIENT2,INGREDIENT3);
     private static final String GLASS = "CocktailDTO glass";
     private static final String INSTRUCTIONS = "Rub the rim of the glass with the lime slice to make the salt stick to it. Take care to moisten..";
-    private static final String IMAGE = "https://www.thecocktaildb.com/images/media/drink/wpxpvu1439905379.jpg";
-    private static final CocktailDBResponse cocktailDBResponse = new CocktailDBResponse(List.of(new DrinkResource(DRINKID,NAME,GLASS,INSTRUCTIONS,IMAGE,INGREDIENT1,INGREDIENT2,INGREDIENT3)));
+    private static final String IMAGEURL = "https://www.thecocktaildb.com/images/media/drink/wpxpvu1439905379.jpg";
+    private static final CocktailDBResponse cocktailDBResponse = new CocktailDBResponse(List.of(new DrinkResource(DRINKID,NAME,GLASS,INSTRUCTIONS, IMAGEURL,INGREDIENT1,INGREDIENT2,INGREDIENT3)));
 
 
-    public static final Cocktail COCKTAIL = new Cocktail(ID,DRINKID,NAME,INGREDIENTS);
+    public static final Cocktail COCKTAIL = new Cocktail(ID,DRINKID,NAME,GLASS,INSTRUCTIONS, IMAGEURL,INGREDIENTS);
 
     @MockBean
     private CocktailDBClient cocktailClient;
+
+    @Autowired
+    private CocktailService cocktailService;
 
 
     @BeforeEach
@@ -62,6 +67,7 @@ class CocktailResourceControllerTests {
     @Transactional
     void getCocktail() throws Exception {
 
+        int countBeforeSave = cocktailService.findAllInDB().size();
 
         mockMvc
                 .perform(
@@ -74,10 +80,24 @@ class CocktailResourceControllerTests {
                 .andExpect(jsonPath("$.[0].name",hasToString(NAME)))
                 .andExpect(jsonPath("$.[0].glass",hasToString(GLASS)))
                 .andExpect(jsonPath("$.[0].instructions",hasToString(INSTRUCTIONS)))
-                .andExpect(jsonPath("$.[0].image",hasToString(IMAGE)))
+                .andExpect(jsonPath("$.[0].image",hasToString(IMAGEURL)))
                 .andExpect(jsonPath("$.[0].ingredients",hasSize(3)))
                 .andExpect(jsonPath("$.[0].ingredients",containsInAnyOrder(INGREDIENTS.toArray())));
 
+
+        int countAfterSave = cocktailService.findAllInDB().size();
+        assertThat(countBeforeSave+1,is(countAfterSave));
+
+        Collection<Cocktail> cocktails = cocktailService.findAllInDB();
+        Cocktail cocktail = cocktails.stream().skip(countBeforeSave).findFirst().get();
+
+        assertThat(cocktail.getIdDrink(), is(DRINKID));
+        assertThat(cocktail.getName(), is(NAME));
+        assertThat(cocktail.getGlass(), is(GLASS));
+        assertThat(cocktail.getImageURL(), is(IMAGEURL));
+        assertThat(cocktail.getInstructions(), is(INSTRUCTIONS));
+        assertThat(cocktail.getId().toString(), matchesPattern(UUID_REGEX));
+        assertThat(cocktail.getIngredients(), containsInAnyOrder(INGREDIENTS.toArray()));
 
     }
 }

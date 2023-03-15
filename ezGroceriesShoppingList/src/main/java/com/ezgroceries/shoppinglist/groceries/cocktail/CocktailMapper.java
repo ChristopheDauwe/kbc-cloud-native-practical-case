@@ -5,6 +5,7 @@ import com.ezgroceries.shoppinglist.groceries.cocktail.domain.Cocktail;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.List;
 import java.util.UUID;
 
 
@@ -15,10 +16,33 @@ public interface CocktailMapper {
 
         return new Cocktail(
                 UUID.randomUUID(),
-                drinkResource.getIdDrink(),
-                drinkResource.getStrDrink(),
+                drinkResource.idDrink(),
+                drinkResource.strDrink(),
+                drinkResource.strGlass(),
+                drinkResource.strInstructions(),
+                drinkResource.strDrinkThumb(),
                 drinkResource.getIngredients()
                 );
+
+    }
+
+    default DrinkResource toDrinkResource(Cocktail cocktail) {
+        List<String> ingredients = cocktail.getIngredients().stream().toList();
+
+        String ingredient1 = "";
+        String ingredient2 = "";
+        String ingredient3 = "";
+
+        try{
+            ingredient1 = ingredients.get(0);
+            ingredient2 = ingredients.get(1);
+            ingredient3 = ingredients.get(2);
+        }catch (IndexOutOfBoundsException ex){
+
+        }
+
+
+        return new DrinkResource(cocktail.getIdDrink(), cocktail.getName(), cocktail.getGlass(), cocktail.getInstructions(), cocktail.getImageURL(),ingredient1,ingredient2,ingredient3 );
 
     }
 
@@ -26,9 +50,9 @@ public interface CocktailMapper {
         return new CocktailResource(
                 cocktail.getId(),
                 cocktail.getName(),
-                "glass",
-                "instructions",
-                "image",
+                cocktail.getGlass(),
+                cocktail.getInstructions(),
+                cocktail.getImageURL(),
                 cocktail.getIngredients()
         );
     }

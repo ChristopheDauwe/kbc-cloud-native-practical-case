@@ -54,6 +54,10 @@ public class ShoppingListService {
         return shoppingList.orElseThrow(() -> new ShoppingListException(String.format("Shopping list with id %s does not exist", uuid)));
     }
 
+    public Collection<ShoppingList> findAllInDB() {
+        return shoppingListRepository.findAll();
+    }
+
     public ShoppingListResource findById(UUID uuid) {
         ShoppingList shoppingList = findShoppingListById(uuid);
         return shoppingListMapper.toShoppingListResource(shoppingList,getIngredients(shoppingList));

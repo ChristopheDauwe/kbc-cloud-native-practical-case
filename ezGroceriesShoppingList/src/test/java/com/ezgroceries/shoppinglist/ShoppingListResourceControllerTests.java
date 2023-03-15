@@ -1,8 +1,10 @@
 package com.ezgroceries.shoppinglist;
 
 import com.ezgroceries.shoppinglist.groceries.cocktail.CocktailResource;
+import com.ezgroceries.shoppinglist.groceries.cocktail.domain.Cocktail;
 import com.ezgroceries.shoppinglist.groceries.cocktail.services.CocktailService;
 import com.ezgroceries.shoppinglist.shoppinglist.ShoppingListResource;
+import com.ezgroceries.shoppinglist.shoppinglist.domain.ShoppingList;
 import com.ezgroceries.shoppinglist.shoppinglist.services.ShoppingListService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +69,8 @@ class ShoppingListResourceControllerTests {
 
 
         int countAfterSave = shoppingListService.findAll().size();
+
+        assertThat(countBeforeSave+1,is(countAfterSave));
         ShoppingListResource shoppingListSaved = shoppingListService.findById(getUUIDFromLocationHeader(mvcResult));
 
         assertThat(shoppingListSaved.name(),is(NAME));
@@ -74,7 +78,7 @@ class ShoppingListResourceControllerTests {
 
 
 
-        assertThat(countBeforeSave+1,is(countAfterSave));
+
 
     }
 
@@ -82,7 +86,8 @@ class ShoppingListResourceControllerTests {
     @Transactional
     void postShoppingListCocktail() throws Exception {
 
-        int countBeforeSave = shoppingListService.findAll().size();
+        int countBeforeSave = shoppingListService.findAllInDB().size();
+
         CocktailResource cocktailResource = cocktailService.save(COCKTAIL);
         ShoppingListResource resource = shoppingListService.createShoppingList(SHOPPINGLISTRESOURCE);
 
@@ -97,10 +102,19 @@ class ShoppingListResourceControllerTests {
                 .andReturn();
         ShoppingListResource shoppingListSaved = shoppingListService.findById(getUUIDFromLocationHeader(mvcResult));
 
-        int countAfterSave = shoppingListService.findAll().size();
+        int countAfterSave = cocktailService.findAllInDB().size();
+        assertThat(countBeforeSave+1,is(countAfterSave));
 
         assertThat(shoppingListSaved.ingredients(), containsInAnyOrder(cocktailResource.ingredients().toArray()));
         assertThat(shoppingListSaved.ingredients(), hasSize(cocktailResource.ingredients().size()));
+
+        Collection<ShoppingList> shoppingLists = shoppingListService.findAllInDB();
+        ShoppingList shoppingList = shoppingLists.stream().skip(countBeforeSave).findFirst().get();
+
+        assertThat(shoppingList.getCocktails(), hasSize(1));
+        Cocktail cocktail = shoppingList.getCocktails().iterator().next();
+        assertThat(cocktail.getId(), is(cocktailResource.id()));
+
     }
 
     @Test

@@ -33,6 +33,11 @@ public class CocktailService {
         return mergeCocktails(response.getDrinks());
     }
 
+    public Collection<Cocktail> findAllInDB(){
+
+        return cocktailRepository.findAll();
+    }
+
     public CocktailResource save(Cocktail cocktail){
         Optional<Cocktail> cocktailOptional = cocktailRepository.findById(cocktail.getId());
 
@@ -48,24 +53,17 @@ public class CocktailService {
 
     public Collection<CocktailResource> mergeCocktails(Collection<DrinkResource>drinks){
         //Get all the idDrink attributes
-       Collection<String> ids=drinks.stream().map(DrinkResource::getIdDrink).toList();
+       Collection<String> ids=drinks.stream().map(DrinkResource::idDrink).toList();
 
         //Get all the ones we already have from our DB, use a Map for convenient lookup
         Map<String, Cocktail> existingEntityMap=cocktailRepository.findByIdDrinkIn(ids).stream().collect(Collectors.toMap(Cocktail::getIdDrink, o->o,(o, o2)->o));
 
         //Stream over all the drinks, map them to the existing ones, persist a new one if not existing
-        Map<String, Cocktail> allEntityMap=drinks.stream().map(drinkResource->{
-            Cocktail cocktailEntity=existingEntityMap.get(drinkResource.getIdDrink());
-            if(cocktailEntity==null){
-                Cocktail cocktail=new Cocktail();
-                cocktail.setId(UUID.randomUUID());
-                cocktail.setIdDrink(drinkResource.getIdDrink());
-                cocktail.setName(drinkResource.getStrDrink());
-                cocktail.setIngredients(drinkResource.getIngredients());
-                cocktailEntity=cocktailRepository.save(cocktail);
-            }
-            return cocktailEntity;
-        }).collect(Collectors.toMap(Cocktail::getIdDrink, o->o,(o, o2)->o));
+        Map<String, Cocktail> allEntityMap=drinks.stream().map(drinkResource->
+                existingEntityMap.getOrDefault(
+                    drinkResource.idDrink(),
+                    cocktailRepository.save(cocktailMapper.toCocktail(drinkResource)))
+        ).collect(Collectors.toMap(Cocktail::getIdDrink, o->o,(o, o2)->o));
 
         //Merge drinks and our entities, transform to CocktailResource instances
         return mergeAndTransform(drinks,allEntityMap);
@@ -73,11 +71,11 @@ public class CocktailService {
 
     private Collection<CocktailResource> mergeAndTransform(Collection<DrinkResource>drinks,Map<String, Cocktail> allEntityMap){
         return drinks.stream().map(drinkResource->new CocktailResource(
-                allEntityMap.get(drinkResource.getIdDrink()).getId(),
-                drinkResource.getStrDrink(),drinkResource.getStrGlass(),
-                drinkResource.getStrInstructions(),
-                drinkResource.getStrDrinkThumb(),
-                drinkResource.getIngredients())).collect(Collectors.toList());
+                allEntityMap.get(drinkResource.idDrink()).getId(),
+                drinkResource.strDrink(),drinkResource.strGlass(),
+                drinkResource.strInstructions(),
+                drinkResource.strDrinkThumb(),
+                drinkResource.getIngredients())).toList();
     }
 
 
