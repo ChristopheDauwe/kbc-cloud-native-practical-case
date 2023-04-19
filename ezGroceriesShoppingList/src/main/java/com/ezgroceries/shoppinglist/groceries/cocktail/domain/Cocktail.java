@@ -1,15 +1,14 @@
 package com.ezgroceries.shoppinglist.groceries.cocktail.domain;
 
 import com.ezgroceries.shoppinglist.utils.StringSetConverter;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.*;
+import java.util.Collection;
+import java.util.UUID;
 
 @Entity
 @Table(name = "cocktail")

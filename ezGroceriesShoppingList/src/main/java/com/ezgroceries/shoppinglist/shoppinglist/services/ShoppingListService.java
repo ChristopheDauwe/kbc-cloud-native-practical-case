@@ -1,17 +1,18 @@
 package com.ezgroceries.shoppinglist.shoppinglist.services;
 
-import com.ezgroceries.shoppinglist.groceries.cocktail.CocktailException;
 import com.ezgroceries.shoppinglist.groceries.cocktail.CocktailResource;
 import com.ezgroceries.shoppinglist.groceries.cocktail.domain.Cocktail;
 import com.ezgroceries.shoppinglist.groceries.cocktail.services.CocktailService;
 import com.ezgroceries.shoppinglist.shoppinglist.ShoppingListException;
 import com.ezgroceries.shoppinglist.shoppinglist.ShoppingListMapper;
-import com.ezgroceries.shoppinglist.shoppinglist.ShoppingListResource;
 import com.ezgroceries.shoppinglist.shoppinglist.domain.ShoppingList;
 import com.ezgroceries.shoppinglist.shoppinglist.repo.ShoppingListRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service("ShoppingListService")
 public class ShoppingListService {
@@ -22,30 +23,28 @@ public class ShoppingListService {
 
     private final ShoppingListMapper shoppingListMapper;
 
+
     public ShoppingListService(ShoppingListRepository shoppingListRepository, CocktailService cocktailService, ShoppingListMapper shoppingListMapper) {
         this.shoppingListRepository = shoppingListRepository;
         this.cocktailService = cocktailService;
         this.shoppingListMapper = shoppingListMapper;
     }
 
-    public ShoppingListResource createShoppingList(ShoppingListResource shoppingListResource) {
+    public ShoppingList createShoppingList(ShoppingList shoppingList) {
 
-        ShoppingList shoppingList = shoppingListRepository.save(new ShoppingList(UUID.randomUUID(), shoppingListResource.name(), Set.of()));
-        return new ShoppingListResource(shoppingList.getId(), shoppingList.getName(), List.of());
+       return shoppingListRepository.save(shoppingList);
     }
 
 
-    public ShoppingListResource addCocktail(ShoppingListResource shoppingListResource, CocktailResource cocktailResource) {
+    public void addCocktail(UUID shoppingListID, CocktailResource cocktailResource) {
 
+        ShoppingList shoppingList = findById(shoppingListID);
         Cocktail cocktail = cocktailService.findCocktailById(cocktailResource.id());
 
 
-        ShoppingList list = findShoppingListById(shoppingListResource.id());
+        ShoppingList list = findShoppingListById(shoppingList.getId());
         list.addCocktail(cocktail);
         shoppingListRepository.save(list);
-
-        return shoppingListMapper.toShoppingListResource(list,getIngredients(list));
-
 
     }
 
@@ -58,22 +57,20 @@ public class ShoppingListService {
         return shoppingListRepository.findAll();
     }
 
-    public ShoppingListResource findById(UUID uuid) {
-        ShoppingList shoppingList = findShoppingListById(uuid);
-        return shoppingListMapper.toShoppingListResource(shoppingList,getIngredients(shoppingList));
+
+    //@PostAuthorize("returnObject.username == principal.username")
+    public ShoppingList findById(UUID uuid) {
+        return findShoppingListById(uuid);
     }
 
-    private Collection<String> getIngredients(ShoppingList list){
-        Collection<String> ingredients = new ArrayList<>();
-
-        list.getCocktails().forEach(cocktail -> ingredients.addAll(cocktail.getIngredients()));
-
-        return ingredients;
+    @PreAuthorize("#username == principal.username && hasRole('USER')")
+    public Collection<ShoppingList> findAllByUsername(String username){
+        return shoppingListRepository.findAllByUsername(username);
     }
 
 
-    public Collection<ShoppingListResource> findAll() {
-        return shoppingListRepository.findAll().stream().map(shoppingList -> shoppingListMapper.toShoppingListResource(shoppingList,getIngredients(shoppingList))).toList();
+    public Collection<ShoppingList> findAll() {
+        return shoppingListRepository.findAll();
     }
 
 

@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.util.CollectionUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -28,6 +27,10 @@ public class ShoppingList {
     @NotNull
     @Column(name = "name", nullable = false)
     private String name;
+
+    @NotNull
+    @Column(name = "username", nullable = false)
+    private String username;
 
     @ManyToMany
     @JoinTable(

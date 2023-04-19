@@ -16,13 +16,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import javax.transaction.Transactional;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 
 import static com.ezgroceries.shoppinglist.TestUtil.UUID_REGEX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;

@@ -9,4 +9,4 @@ import java.util.UUID;
  * @param name
  * @param ingredients
  */
-public record ShoppingListResource(UUID id, String name, Collection<String> ingredients) {}
+public record ShoppingListResource(UUID id, String name,Collection<String> ingredients) {}

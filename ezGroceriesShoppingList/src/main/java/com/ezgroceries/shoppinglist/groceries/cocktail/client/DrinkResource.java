@@ -1,13 +1,9 @@
 package com.ezgroceries.shoppinglist.groceries.cocktail.client;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.stereotype.Component;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 
 /**
@@ -31,13 +27,13 @@ public record DrinkResource (String idDrink, String strDrink, String strGlass, S
     public Collection<String> getIngredients() {
         Collection<String> ingr = new ArrayList<>();
 
-        if(!strIngredient1.isEmpty()){
+        if(StringUtils.isNotEmpty(strIngredient1)){
             ingr.add(strIngredient1);
         }
-        if(!strIngredient2.isEmpty()){
+        if(StringUtils.isNotEmpty(strIngredient2)){
             ingr.add(strIngredient2);
         }
-        if(!strIngredient3.isEmpty()){
+        if(StringUtils.isNotEmpty(strIngredient3)){
             ingr.add(strIngredient3);
         }
 

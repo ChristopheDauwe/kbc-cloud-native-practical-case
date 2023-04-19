@@ -1,7 +1,7 @@
 CREATE TABLE COCKTAIL
 (
     ID          UUID PRIMARY KEY,
-    ID_DRINK        TEXT UNIQUE,
-    NAME        TEXT,
-    INGREDIENTS  TEXT
+    ID_DRINK        varchar(255) UNIQUE,
+    NAME        varchar(255),
+    INGREDIENTS  varchar(255)
 );
