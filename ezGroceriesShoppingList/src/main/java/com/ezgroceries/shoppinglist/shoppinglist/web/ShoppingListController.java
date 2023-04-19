@@ -1,19 +1,22 @@
 package com.ezgroceries.shoppinglist.shoppinglist.web;
 
 import com.ezgroceries.shoppinglist.groceries.cocktail.CocktailResource;
+import com.ezgroceries.shoppinglist.shoppinglist.ShoppingListMapper;
 import com.ezgroceries.shoppinglist.shoppinglist.ShoppingListResource;
+import com.ezgroceries.shoppinglist.shoppinglist.domain.ShoppingList;
 import com.ezgroceries.shoppinglist.shoppinglist.services.ShoppingListService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.security.Principal;
 import java.util.Collection;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController("ShoppingListController")
@@ -21,28 +24,26 @@ public class ShoppingListController {
 
     private static final Logger log = LoggerFactory.getLogger(ShoppingListController.class);
 
+    private final ShoppingListMapper shoppingListMapper;
 
     private final ShoppingListService shoppingListService;
 
-    public ShoppingListController(ShoppingListService shoppingListService) {
+    public ShoppingListController(ShoppingListMapper shoppingListMapper, ShoppingListService shoppingListService) {
+        this.shoppingListMapper = shoppingListMapper;
         this.shoppingListService = shoppingListService;
     }
 
     @PostMapping(value = "/shopping-lists")
-    public ResponseEntity<Void> createShoppingList(@RequestBody ShoppingListResource newShoppingListResource) {
-        ShoppingListResource shoppingListResource = shoppingListService.createShoppingList(newShoppingListResource);
+    public ResponseEntity<Void> createShoppingList(@RequestBody ShoppingListResource newShoppingListResource, Principal principal) {
+        ShoppingList shoppingList = shoppingListService.createShoppingList(shoppingListMapper.toShoppingList(newShoppingListResource,principal.getName()));
 
-        return entityWithLocation(shoppingListResource.id());
+        return entityWithLocation(shoppingList.getId());
     }
 
     @PostMapping(value = "/shopping-lists/{shoppingListId}/cocktails")
     public ResponseEntity<Void> addCocktailToShoppingList(@PathVariable("shoppingListId") UUID shoppingListID, @RequestBody CocktailResource cocktailResource) {
-        ShoppingListResource shoppingListResource = shoppingListService.findById(shoppingListID);
 
-
-
-
-            shoppingListService.addCocktail(shoppingListResource, cocktailResource);
+            shoppingListService.addCocktail(shoppingListID, cocktailResource);
 
             URI location = ServletUriComponentsBuilder
                     .fromCurrentContextPath()
@@ -55,10 +56,16 @@ public class ShoppingListController {
 
     @GetMapping(value = "/shopping-lists")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<ShoppingListResource> getAllShoppingList() {
+    @PreAuthorize("isFullyAuthenticated()")
+    public Collection<ShoppingListResource> getAllShoppingList(Principal principal) {
+        return shoppingListMapper.toShoppingListResources(shoppingListService.findAllByUsername(principal.getName()));
+    }
 
-
-        return shoppingListService.findAll();
+    @GetMapping(value = "/shopping-lists/{shoppingListId}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("isFullyAuthenticated()")
+    public ShoppingListResource getShoppingListById(@PathVariable("shoppingListId") UUID shoppingListID) {
+        return shoppingListMapper.toShoppingListResource(shoppingListService.findById(shoppingListID));
     }
 
     /**

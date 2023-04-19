@@ -10,7 +10,10 @@ import com.ezgroceries.shoppinglist.groceries.cocktail.domain.Cocktail;
 import com.ezgroceries.shoppinglist.groceries.cocktail.repo.CocktailRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service("CocktailService")

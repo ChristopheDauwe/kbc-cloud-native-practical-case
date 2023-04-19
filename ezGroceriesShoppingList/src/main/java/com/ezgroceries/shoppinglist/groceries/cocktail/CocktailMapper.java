@@ -3,7 +3,6 @@ package com.ezgroceries.shoppinglist.groceries.cocktail;
 import com.ezgroceries.shoppinglist.groceries.cocktail.client.DrinkResource;
 import com.ezgroceries.shoppinglist.groceries.cocktail.domain.Cocktail;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 import java.util.List;
 import java.util.UUID;

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultMatcher;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -41,6 +40,8 @@ public final class TestUtil {
         String location = mvcResult.getResponse().getHeader("Location");
         return UUID.fromString(location.substring(location.lastIndexOf("/")+1,location.length()));
     }
+
+    
 
 
 }

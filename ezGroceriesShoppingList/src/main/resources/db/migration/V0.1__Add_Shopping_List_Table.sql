@@ -1,5 +1,5 @@
 CREATE TABLE SHOPPING_LIST
 (
     ID      UUID PRIMARY KEY,
-    NAME TEXT
+    NAME varchar(255)
 );
